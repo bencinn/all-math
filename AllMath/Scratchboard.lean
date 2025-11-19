@@ -165,3 +165,20 @@ theorem infinites_prime
         exact h
       exact ⟨p_prime, p_greater⟩
 #check infinites_prime
+
+theorem example_3 (n : ℕ) (hn : n ≥ 4) : n ^ 3 < 3 ^ n := by
+  induction n, hn using Nat.le_induction with
+  | base => linarith
+  | succ k hk ih =>
+    have h_3_gt_0 : 3 > 0 := by linarith
+    have h_lt_pow_3 := Nat.mul_lt_mul_of_pos_left ih h_3_gt_0
+    have h_t : 3 * 3 ^ k = 3 ^ (k + 1) := by ring
+    rw [h_t] at h_lt_pow_3
+    -- proof that (k + 1) ^ 3 < 3 * k ^ 3
+    have h := calc
+      (k + 1) ^ 3 = k ^ 3 + 3 * k ^ 2 + 3 * k + 1 := by ring
+      _ < k ^ 3 + 3 * k ^ 2 + k ^ 3 := by nlinarith
+      _ < k ^ 3 + k ^ 3 + k ^ 3 := by nlinarith
+      _ = 3 * k ^ 3 := by ring
+    exact Nat.lt_trans h h_lt_pow_3
+
