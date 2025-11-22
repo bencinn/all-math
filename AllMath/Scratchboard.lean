@@ -191,3 +191,51 @@ theorem example_4 (n : ℕ) (hn : n ≥ 4) : Nat.factorial n > 2 ^ n := by
     have h2 : 2 ^ (k + 1) = 2 * 2 ^ k := by ring
     nlinarith
 
+section TriangleNumber
+
+def triangular_number (n : ℕ) : ℕ :=
+  ∑ k ∈ Finset.range (n+1), k
+
+#eval triangular_number 20 -- expect 210
+
+lemma closed_form_triangular (n : ℕ) : triangular_number n = n * (n + 1) / 2 := by 
+  unfold triangular_number
+  rw [Finset.sum_range_id (n + 1)]
+  rw [Nat.add_sub_cancel]
+  ring_nf
+
+lemma odd_squared_minus_one_dvd_eight (n : ℕ) (h_odd : Odd n) : 8 ∣ n ^ 2 - 1 := by
+  have h := Odd.exists_bit1 h_odd
+  obtain ⟨p, hp⟩ := h
+  rw [hp]
+  ring_nf
+  have h : 1 + p * 4 + p ^ 2 * 4 - 1 = p * 4 + p ^ 2 * 4 := by grind
+  rw [h]
+  rw [← Nat.add_mul]
+  have h2 : 8 = 2 * 4 := by ring
+  rw [h2]
+  rw [Nat.mul_dvd_mul_iff_right]
+  · have h3 : p + p ^ 2 = p * (p + 1) := by ring
+    rw [h3]
+    cases Nat.even_or_odd p with
+    | inl hp =>
+      rw [even_iff_exists_add_self] at hp
+      obtain ⟨r, hr⟩ := hp
+      rw [hr]
+      ring_nf
+      grind
+    | inr hq => 
+      have he := Odd.add_one hq
+      rw [even_iff_exists_add_self] at he
+      obtain ⟨r, hr⟩ := he
+      rw [hr]
+      ring_nf
+      grind
+  · linarith
+
+-- P1:
+theorem p1 (e : ℕ) (h0 : e > 0) (he : Odd e) :
+    ∃ (k : ℕ), triangular_number k = (e ^ 2 - 1) / 8 := by
+    sorry
+
+end TriangleNumber
