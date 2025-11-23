@@ -205,32 +205,19 @@ lemma closed_form_triangular (n : ℕ) : triangular_number n = n * (n + 1) / 2 :
   ring_nf
 
 lemma odd_squared_minus_one_dvd_eight (n : ℕ) (h_odd : Odd n) : 8 ∣ n ^ 2 - 1 := by
-  have h := Odd.exists_bit1 h_odd
-  obtain ⟨p, hp⟩ := h
-  rw [hp]
+  obtain ⟨p, rfl⟩ := Odd.exists_bit1 h_odd
   ring_nf
-  have h : 1 + p * 4 + p ^ 2 * 4 - 1 = p * 4 + p ^ 2 * 4 := by grind
-  rw [h]
-  rw [← Nat.add_mul]
-  have h2 : 8 = 2 * 4 := by ring
-  rw [h2]
-  rw [Nat.mul_dvd_mul_iff_right]
-  · have h3 : p + p ^ 2 = p * (p + 1) := by ring
-    rw [h3]
-    cases Nat.even_or_odd p with
-    | inl hp =>
-      rw [even_iff_exists_add_self] at hp
-      obtain ⟨r, hr⟩ := hp
-      rw [hr]
-      ring_nf
-      grind
-    | inr hq => 
-      have he := Odd.add_one hq
-      rw [even_iff_exists_add_self] at he
-      obtain ⟨r, hr⟩ := he
-      rw [hr]
-      ring_nf
-      grind
+  have : 1 + p * 4 + p ^ 2 * 4 - 1 = p * 4 + p ^ 2 * 4 := by grind
+  rw [this, ← Nat.add_mul]
+  have : 8 = 2 * 4 := by ring
+  rw [this, Nat.mul_dvd_mul_iff_right]
+  · rw [Nat.pow_two, ← one_add_mul]
+    have : Even p ∨ Even (1 + p) := by
+      have : Odd p ↔  Even (1 + p) := by simp [Nat.add_comm 1 p, Nat.even_add_one]
+      simpa [this] using Nat.even_or_odd p
+    rcases this with hp | hp
+    · exact Nat.dvd_mul_left_of_dvd (two_div_even p hp) (1 + p)
+    · exact Nat.dvd_mul_right_of_dvd (two_div_even (1 + p) hp) p
   · linarith
 
 -- P1:
