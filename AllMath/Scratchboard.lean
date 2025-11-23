@@ -1,4 +1,10 @@
-import Mathlib
+-- import Mathlib
+-- use #min_imports
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Data.Int.Star
+import Mathlib.NumberTheory.Real.Irrational
+import Mathlib.Tactic.NormNum.NatFactorial
 
 theorem th (h : 2 = 2)
   : 2 = 2 :=
