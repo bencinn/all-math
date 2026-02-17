@@ -227,8 +227,62 @@ lemma odd_squared_minus_one_dvd_eight (n : ℕ) (h_odd : Odd n) : 8 ∣ n ^ 2 - 
   · linarith
 
 -- P1:
-theorem p1 (e : ℕ) (h0 : e > 0) (he : Odd e) :
-    ∃ (k : ℕ), triangular_number k = (e ^ 2 - 1) / 8 := by
-    sorry
+-- theorem p1 (e : ℕ) (h0 : e > 0) (he : Odd e) : ∃ (k : ℕ), triangular_number k = (e ^ 2 - 1) / 8
 
 end TriangleNumber
+
+section TrigButEulerFunny
+
+#check Complex.exp_mul_I
+
+-- cos x from e^ix
+lemma cos_x_from_exp_ix (x : Complex) :
+    Complex.cos x = (Complex.exp (x * Complex.I) + Complex.exp (-x * Complex.I)) / 2 := by
+      rw [Complex.exp_mul_I]
+      rw [Complex.exp_mul_I]
+      rw [Complex.sin_neg]
+      rw [Complex.cos_neg]
+      ring_nf
+
+-- sin x from e^ix
+lemma sin_x_from_exp_ix (x : Complex) :
+    Complex.sin x = (Complex.exp (x * Complex.I) - Complex.exp (-x * Complex.I))
+                    / (2 * Complex.I) := by
+      rw [Complex.exp_mul_I]
+      rw [Complex.exp_mul_I]
+      rw [Complex.sin_neg]
+      rw [Complex.cos_neg]
+      ring_nf
+      field_simp
+
+-- tan x can be achieved by using the previous two proof. i skip because too lazy
+
+-- sin^2 + cos^2 = 1
+lemma sin_sq_add_cos_sq (x : Complex) :
+    (Complex.sin x)^2 + (Complex.cos x)^2 = 1 := by
+      rw [sin_x_from_exp_ix]
+      rw [cos_x_from_exp_ix]
+      field_simp
+      simp
+      ring_nf
+      rw [<- Complex.exp_add]
+      simp
+
+-- sin 2*x = 2 sin x * cos x
+lemma sin_two_x (x : Complex) :
+    Complex.sin (2*x) = 2 * Complex.sin x * Complex.cos x := by
+      rw [sin_x_from_exp_ix]
+      rw [show 2 * x = x + x by ring]
+      rw [sin_x_from_exp_ix]
+      rw [cos_x_from_exp_ix]
+      ring_nf
+      have h: x * Complex.I * 2 = (x * Complex.I) + (x * Complex.I) := by ring
+      rw [h]
+      rw [Complex.exp_add]
+      ring_nf
+      have h2 : Complex.exp (-(x * Complex.I * 2)) = Complex.exp (-(x * Complex.I)) ^ 2 := by
+        simp [h, Complex.exp_add]
+        ring
+      rw [h2]
+
+end TrigButEulerFunny
