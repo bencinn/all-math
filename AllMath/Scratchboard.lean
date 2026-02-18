@@ -321,17 +321,22 @@ lemma γ_eq_sum : γ = (∑' n, γ' n) := by
       rw [Finset.sum_sub_distrib]
       congr
       · cases n with
-        | zero =>
-          simp
+        | zero => simp
         | succ n =>
           rw [Finset.sum_range_succ']
           simp only [Nat.cast_zero, div_zero, add_zero, Nat.add_one_sub_one]
-          rw [harmonic_eq_sum_Icc]
-          simp
-          rw [<- Finset.Ico_add_one_right_eq_Icc]
-          rw [Finset.sum_Ico_eq_sum_range]
+          rw [harmonic_eq_sum_Icc, <- Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
           simp [add_comm]
-      · sorry
+      · induction n with
+        | zero => simp
+        | succ n ih =>
+          rw [Finset.sum_range_succ, <- ih]
+          rcases n.eq_zero_or_pos with rfl | hn
+          · simp
+          · rw [Real.log_div]
+            · simp
+            · positivity 
+            · positivity
     · sorry
   · intro n
     by_cases h : n = 0
