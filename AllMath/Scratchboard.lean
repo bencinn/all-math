@@ -294,14 +294,17 @@ end TrigButEulerFunny
 -- let's try to reproduce arXiv:math/0211148 and arXiv:math/0508042
 namespace EulerMascheroniTest
 
-noncomputable def eulerMascheroniSeq (n : ℕ) := harmonic n - Real.log n
+-- noncomputable def eulerMascheroniSeq (n : ℕ) := harmonic n - Real.log n
+noncomputable def eulerMascheroniSeq (n : ℕ) := Real.eulerMascheroniSeq' n
 
 lemma eulerMascheroniSeq_one :
   eulerMascheroniSeq 1 = 1 := by
     rw [eulerMascheroniSeq]
+    rw [Real.eulerMascheroniSeq']
     simp
 
-noncomputable def γ := limUnder Filter.atTop eulerMascheroniSeq
+-- noncomputable def γ := limUnder Filter.atTop eulerMascheroniSeq
+noncomputable def γ := Real.eulerMascheroniConstant 
 
 noncomputable def eulerMascheroniSeq' (n : ℕ) := (-1)^(n-1) * eulerMascheroniSeq n
 
@@ -309,6 +312,9 @@ noncomputable def γ' (n : ℕ) := ((1/n) - Real.log ((n+1)/n))
 noncomputable def ln4OverPiSeq (n : ℕ) := (-1)^(n-1) * γ' n
 
 lemma ln_4_over_pi : Real.log (Real.pi / 4) = (∑' n, ln4OverPiSeq n) := by sorry
+
+-- i don't know when I first started that mathlib already have them :sob:
+-- #check Real.tendsto_eulerMascheroniSeq
 
 lemma γ_eq_sum : γ = (∑' n, γ' n) := by
   symm
@@ -337,7 +343,8 @@ lemma γ_eq_sum : γ = (∑' n, γ' n) := by
             · simp
             · positivity 
             · positivity
-    · sorry
+    · apply Filter.Tendsto.congr' _ Real.tendsto_eulerMascheroniSeq
+      sorry
   · intro n
     by_cases h : n = 0
     · rw [h]
