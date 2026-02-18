@@ -5,6 +5,8 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Int.Star
 import Mathlib.NumberTheory.Real.Irrational
 import Mathlib.Tactic.NormNum.NatFactorial
+import Mathlib.NumberTheory.Harmonic.Defs
+import Mathlib.NumberTheory.LSeries.RiemannZeta
 
 theorem th (h : 2 = 2)
   : 2 = 2 :=
@@ -285,3 +287,19 @@ lemma sin_two_x (x : Complex) :
       rw [h2]
 
 end TrigButEulerFunny
+
+-- let's try to reproduce arXiv:math/0211148 and arXiv:math/0508042
+namespace EulerMascheroniTest
+
+noncomputable def eulerMascheroniSeq (n : ℕ) := harmonic n - Real.log n
+
+lemma eulerMascheroniSeq_one :
+  eulerMascheroniSeq 1 = 1 := by
+    rw [eulerMascheroniSeq]
+    simp
+
+noncomputable def γ := limUnder Filter.atTop eulerMascheroniSeq
+
+noncomputable def eulerMascheroniSeq' (n : ℕ) := (-1)^(n-1) * eulerMascheroniSeq n
+
+end EulerMascheroniTest
