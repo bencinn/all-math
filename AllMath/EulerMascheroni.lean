@@ -19,7 +19,7 @@ Goal (arXiv:math/0211148):
 -/
 
 /-- definition of the sequence in terms of harmonic -/
-noncomputable def eulerMascheroniSeq (n : ℕ) := harmonic n - Real.log n
+noncomputable def eulerMascheroniSeq (n : ℕ) := if n = 0 then 2 else harmonic n - Real.log n
 
 lemma eulerMascheroniSeq_one :
   eulerMascheroniSeq 1 = 1 := by
@@ -39,6 +39,36 @@ noncomputable def γ' (n : ℕ) := ((1/n) - Real.log ((n+1)/n))
 noncomputable def ln4OverPiSeq (n : ℕ) := (-1)^(n-1) * γ' n
 
 lemma ln_4_over_pi : Real.log (Real.pi / 4) = (∑' n, ln4OverPiSeq n) := by sorry
+
+/-- TODO: This is from mathlib4 because I need sleep. good night see you tomorrow -/
+lemma strictAnti_eulerMascheroniSeq : StrictAnti eulerMascheroniSeq := by
+  refine strictAnti_nat_of_succ_lt (fun n ↦ ?_)
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · simp [eulerMascheroniSeq]
+  simp_rw [eulerMascheroniSeq, eq_false_intro hn.ne', reduceCtorEq, if_false]
+  rw [← sub_pos, sub_sub_sub_comm,
+    harmonic_succ, Rat.cast_add, ← sub_sub, sub_self, zero_sub, sub_eq_add_neg, neg_sub,
+    ← sub_eq_neg_add, sub_pos, ← Real.log_div (by positivity) (by positivity), ← neg_lt_neg_iff,
+    ← Real.log_inv]
+  refine (Real.log_lt_sub_one_of_pos ?_ ?_).trans_le (le_of_eq ?_)
+  · positivity
+  · simp [field]
+  · simp [field]
+
+-- lemma γ_convergence : ∃ x, Filter.Tendsto eulerMascheroniSeq Filter.atTop (nhds x) := by
+--   sorry
+
+lemma γ_convergence : ∃ x, Filter.Tendsto eulerMascheroniSeq Filter.atTop (nhds x) := by
+  use (iInf eulerMascheroniSeq)
+  apply tendsto_atTop_ciInf
+  · exact strictAnti_eulerMascheroniSeq.antitone
+  · use 0 
+    intro x ⟨n, hn⟩
+    rw [← hn]
+    rw [eulerMascheroniSeq]
+    -- idk now
+    sorry
+
 
 /- TODO: rewrite this entire proof because what the fuck have i done.
 why didn't i digress the paper before writing AAAAAAAAAAAAAAAAA -/
@@ -69,7 +99,29 @@ lemma γ_eq_sum : γ = (∑' n, γ' n) := by
             · simp
             · positivity 
             · positivity
-    · sorry
+    · unfold eulerMascheroniSeq 
+      let s : ℕ → ℝ :=
+        fun n => harmonic n - Real.log n
+      have :
+        (fun n => harmonic (n - 1) - Real.log n)
+        =
+        (fun n => s n - (1 : ℝ)/n) := by
+        funext n
+        cases n with
+        | zero => simp [s]
+        | succ k =>
+            simp [s, harmonic_succ]
+            ring
+      rw [this]
+      have hzero :
+        Filter.Tendsto (fun n : ℕ => (1 : ℝ) / n)
+          Filter.atTop (nhds 0) := by
+            simpa [one_div] using (tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop)
+      have hs :
+        Filter.Tendsto s Filter.atTop
+          (nhds (limUnder Filter.atTop s)) :=
+        tendsto_nhds_limUnder γ_convergence
+      simpa using hs.sub hzero
   · intro n
     by_cases h : n = 0
     · rw [h]
@@ -82,7 +134,6 @@ lemma γ_eq_sum : γ = (∑' n, γ' n) := by
           _ = 1 / n := by
             field_simp
             ring
-
       exact sub_nonneg.mpr hlog
 
 -- then proof that both of them equal to ∫∫ [0,1]^2 (1-x)/((1-xy)(-ln xy))
