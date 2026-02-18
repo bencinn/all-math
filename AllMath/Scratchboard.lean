@@ -197,7 +197,7 @@ theorem example_4 (n : ℕ) (hn : n ≥ 4) : Nat.factorial n > 2 ^ n := by
     have h2 : 2 ^ (k + 1) = 2 * 2 ^ k := by ring
     nlinarith
 
-section TriangleNumber
+namespace TriangleNumber
 
 def triangular_number (n : ℕ) : ℕ :=
   ∑ k ∈ Finset.range (n+1), k
@@ -228,10 +228,9 @@ lemma odd_squared_minus_one_dvd_eight (n : ℕ) (h_odd : Odd n) : 8 ∣ n ^ 2 - 
 
 -- P1:
 -- theorem p1 (e : ℕ) (h0 : e > 0) (he : Odd e) : ∃ (k : ℕ), triangular_number k = (e ^ 2 - 1) / 8
-
 end TriangleNumber
 
-section TrigButEulerFunny
+namespace TrigButEulerFunny
 
 #check Complex.exp_mul_I
 
