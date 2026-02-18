@@ -1,11 +1,8 @@
--- import Mathlib
--- use #min_imports
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Int.Star
 import Mathlib.NumberTheory.Real.Irrational
 import Mathlib.Tactic.NormNum.NatFactorial
-import Mathlib.NumberTheory.Harmonic.Defs
 import Mathlib.NumberTheory.Harmonic.Defs
 import Mathlib.NumberTheory.Harmonic.Bounds
 import Mathlib.NumberTheory.LSeries.RiemannZeta
@@ -242,22 +239,20 @@ namespace TrigButEulerFunny
 -- cos x from e^ix
 lemma cos_x_from_exp_ix (x : Complex) :
     Complex.cos x = (Complex.exp (x * Complex.I) + Complex.exp (-x * Complex.I)) / 2 := by
-      rw [Complex.exp_mul_I]
-      rw [Complex.exp_mul_I]
-      rw [Complex.sin_neg]
-      rw [Complex.cos_neg]
-      ring_nf
+      have h1 := Complex.exp_mul_I x
+      have h2 := Complex.exp_mul_I (-x)
+      rw [h1, h2, Complex.sin_neg, Complex.cos_neg]
+      ring
 
 -- sin x from e^ix
 lemma sin_x_from_exp_ix (x : Complex) :
     Complex.sin x = (Complex.exp (x * Complex.I) - Complex.exp (-x * Complex.I))
                     / (2 * Complex.I) := by
-      rw [Complex.exp_mul_I]
-      rw [Complex.exp_mul_I]
-      rw [Complex.sin_neg]
-      rw [Complex.cos_neg]
-      ring_nf
+      have h1 := Complex.exp_mul_I x
+      have h2 := Complex.exp_mul_I (-x)
+      rw [h1, h2, Complex.sin_neg, Complex.cos_neg]
       field_simp
+      ring
 
 -- tan x can be achieved by using the previous two proof. i skip because too lazy
 
@@ -290,72 +285,3 @@ lemma sin_two_x (x : Complex) :
       rw [h2]
 
 end TrigButEulerFunny
-
--- let's try to reproduce arXiv:math/0211148 and arXiv:math/0508042
-namespace EulerMascheroniTest
-
--- noncomputable def eulerMascheroniSeq (n : ℕ) := harmonic n - Real.log n
-noncomputable def eulerMascheroniSeq (n : ℕ) := Real.eulerMascheroniSeq' n
-
-lemma eulerMascheroniSeq_one :
-  eulerMascheroniSeq 1 = 1 := by
-    rw [eulerMascheroniSeq]
-    rw [Real.eulerMascheroniSeq']
-    simp
-
--- noncomputable def γ := limUnder Filter.atTop eulerMascheroniSeq
-noncomputable def γ := Real.eulerMascheroniConstant 
-
-noncomputable def eulerMascheroniSeq' (n : ℕ) := (-1)^(n-1) * eulerMascheroniSeq n
-
-noncomputable def γ' (n : ℕ) := ((1/n) - Real.log ((n+1)/n))
-noncomputable def ln4OverPiSeq (n : ℕ) := (-1)^(n-1) * γ' n
-
-lemma ln_4_over_pi : Real.log (Real.pi / 4) = (∑' n, ln4OverPiSeq n) := by sorry
-
--- i don't know when I first started that mathlib already have them :sob:
--- #check Real.tendsto_eulerMascheroniSeq
-
-lemma γ_eq_sum : γ = (∑' n, γ' n) := by
-  symm
-  apply HasSum.tsum_eq
-  unfold γ'
-  rw [hasSum_iff_tendsto_nat_of_nonneg]
-  · dsimp [γ]
-    apply Filter.Tendsto.congr (f₁ := fun n ↦ harmonic (n - 1) - Real.log n)
-    · intro n
-      rw [Finset.sum_sub_distrib]
-      congr
-      · cases n with
-        | zero => simp
-        | succ n =>
-          rw [Finset.sum_range_succ']
-          simp only [Nat.cast_zero, div_zero, add_zero, Nat.add_one_sub_one]
-          rw [harmonic_eq_sum_Icc, <- Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
-          simp [add_comm]
-      · induction n with
-        | zero => simp
-        | succ n ih =>
-          rw [Finset.sum_range_succ, <- ih]
-          rcases n.eq_zero_or_pos with rfl | hn
-          · simp
-          · rw [Real.log_div]
-            · simp
-            · positivity 
-            · positivity
-    · apply Filter.Tendsto.congr' _ Real.tendsto_eulerMascheroniSeq
-      sorry
-  · intro n
-    by_cases h : n = 0
-    · rw [h]
-      simp
-    · rw [sub_nonneg]
-      calc
-        Real.log ((n + 1) / n)
-        _ ≤ (n + 1) / n - 1 := Real.log_le_sub_one_of_pos (by positivity)
-        _ = 1 / n := by field_simp; ring
-
--- then proof that both of them equal to ∫∫ [0,1]^2 (1-x)/((1-xy)(-ln xy))
--- and we should get the first result: γ = ln (4/π)
-
-end EulerMascheroniTest
