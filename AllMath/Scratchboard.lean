@@ -1,10 +1,12 @@
--- import Mathlib
--- use #min_imports
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Int.Star
 import Mathlib.NumberTheory.Real.Irrational
 import Mathlib.Tactic.NormNum.NatFactorial
+import Mathlib.NumberTheory.Harmonic.Defs
+import Mathlib.NumberTheory.Harmonic.Bounds
+import Mathlib.NumberTheory.LSeries.RiemannZeta
+import Mathlib.NumberTheory.Harmonic.EulerMascheroni
 
 theorem th (h : 2 = 2)
   : 2 = 2 :=
@@ -237,22 +239,20 @@ namespace TrigButEulerFunny
 -- cos x from e^ix
 lemma cos_x_from_exp_ix (x : Complex) :
     Complex.cos x = (Complex.exp (x * Complex.I) + Complex.exp (-x * Complex.I)) / 2 := by
-      rw [Complex.exp_mul_I]
-      rw [Complex.exp_mul_I]
-      rw [Complex.sin_neg]
-      rw [Complex.cos_neg]
-      ring_nf
+      have h1 := Complex.exp_mul_I x
+      have h2 := Complex.exp_mul_I (-x)
+      rw [h1, h2, Complex.sin_neg, Complex.cos_neg]
+      ring
 
 -- sin x from e^ix
 lemma sin_x_from_exp_ix (x : Complex) :
     Complex.sin x = (Complex.exp (x * Complex.I) - Complex.exp (-x * Complex.I))
                     / (2 * Complex.I) := by
-      rw [Complex.exp_mul_I]
-      rw [Complex.exp_mul_I]
-      rw [Complex.sin_neg]
-      rw [Complex.cos_neg]
-      ring_nf
+      have h1 := Complex.exp_mul_I x
+      have h2 := Complex.exp_mul_I (-x)
+      rw [h1, h2, Complex.sin_neg, Complex.cos_neg]
       field_simp
+      ring
 
 -- tan x can be achieved by using the previous two proof. i skip because too lazy
 
